@@ -411,10 +411,14 @@
     cursor: pointer;
     transition: all var(--transition-fast);
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    line-height: 1.25;
     border: 1px solid transparent;
   }
+  .event-pill.is-long      { font-size: 10px; line-height: 1.2; }
+  .event-pill.is-very-long { font-size: 9px;  line-height: 1.15; padding: 3px 6px; }
   .event-pill:hover {
     transform: translateY(-1px);
     box-shadow: var(--shadow-xs);
@@ -851,6 +855,45 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+  }
+
+  /* Admin registrants list */
+  .registrant-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+  }
+  .registrant-name {
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .registrant-meta {
+    color: var(--text-tertiary);
+    font-size: var(--font-size-xs);
+    margin-top: 2px;
+  }
+  .registrant-when {
+    color: var(--text-tertiary);
+    font-size: var(--font-size-xs);
+    text-align: right;
+  }
+  .registrant-count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--pastel-mint);
+    color: var(--pastel-mint-text);
+    border-radius: 999px;
+    padding: 2px 10px;
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    margin-left: 6px;
   }
 
   /* ========================================================================
@@ -1800,8 +1843,10 @@ function renderCalendar() {
     if (dayEvents.length) {
       const eventsWrap = el("div", { class: "day-events" });
       dayEvents.slice(0, 3).forEach(function(evt) {
+        const titleLen = (evt.title || "").length;
+        const sizeCls = titleLen > 36 ? " is-very-long" : (titleLen > 22 ? " is-long" : "");
         const pill = el("div", {
-          class: "event-pill " + (evt.category || "lesson"),
+          class: "event-pill " + (evt.category || "lesson") + sizeCls,
           title: evt.title,
           onclick: function(e) {
             e.stopPropagation();
@@ -2210,6 +2255,23 @@ function openEventDetail(event, sameDayList) {
       wrap.appendChild(filesWrap);
     }
 
+    // Admin-only: list of registrants for this event
+    if (state.isAdmin) {
+      const adminBox = el("div", { class: "event-detail-section" });
+      const countBadge = el("span", { class: "registrant-count-badge" }, "…");
+      const headerLabel = el("div", { class: "event-detail-section-label" }, [
+        "Registrations",
+        countBadge
+      ]);
+      adminBox.appendChild(headerLabel);
+      const listWrap = el("div", { class: "event-link-list" }, [
+        el("div", { class: "event-detail-description", style: "color: var(--text-tertiary);" }, "Loading registrants…")
+      ]);
+      adminBox.appendChild(listWrap);
+      wrap.appendChild(adminBox);
+      loadEventRegistrations(evt.id, listWrap, countBadge);
+    }
+
     // Registration call-to-action
     if (requiresReg) {
       const regBox = el("div", { class: "event-detail-section" });
@@ -2297,6 +2359,54 @@ const userRegistrations = { byEventId: {} };  // populated below
 
 function userIsRegisteredFor(evt) {
   return state.currentUser ? userRegistrations.byEventId[evt.id] : null;
+}
+
+function loadEventRegistrations(eventId, listEl, badgeEl) {
+  if (!state.isAdmin) return;
+  db.collection(REGISTRATIONS_COLLECTION)
+    .where("eventId", "==", eventId)
+    .get()
+    .then(function(snap) {
+      const regs = snap.docs.map(function(d) { return d.data(); });
+      regs.sort(function(a, b) {
+        const ta = a.registeredAt && a.registeredAt.toMillis ? a.registeredAt.toMillis() : 0;
+        const tb = b.registeredAt && b.registeredAt.toMillis ? b.registeredAt.toMillis() : 0;
+        return tb - ta;
+      });
+      if (badgeEl) badgeEl.textContent = String(regs.length);
+      listEl.innerHTML = "";
+      if (!regs.length) {
+        listEl.appendChild(el("div", {
+          class: "event-detail-description",
+          style: "color: var(--text-tertiary);"
+        }, "No one has registered yet."));
+        return;
+      }
+      regs.forEach(function(r) {
+        const whenStr = (r.registeredAt && r.registeredAt.toDate)
+          ? r.registeredAt.toDate().toLocaleDateString(undefined, { month: "short", day: "numeric" })
+          : "";
+        const nameLine = (r.childName ? r.childName : (r.userName || r.userEmail || "Unknown"))
+          + (r.childLevel ? "  ·  " + r.childLevel : "");
+        const metaLine = (r.userName ? r.userName + "  ·  " : "") + (r.userEmail || "");
+        listEl.appendChild(el("div", { class: "registrant-row" }, [
+          el("div", {}, [
+            el("div", { class: "registrant-name" }, nameLine),
+            el("div", { class: "registrant-meta" }, metaLine)
+          ]),
+          el("div", { class: "registrant-when" }, whenStr)
+        ]));
+      });
+    })
+    .catch(function(err) {
+      console.warn("Failed to load registrants:", err);
+      if (badgeEl) badgeEl.textContent = "!";
+      listEl.innerHTML = "";
+      listEl.appendChild(el("div", {
+        class: "event-detail-description",
+        style: "color: var(--pastel-rose-text);"
+      }, "Could not load registrants: " + err.message));
+    });
 }
 
 function listenForRegistrations() {
