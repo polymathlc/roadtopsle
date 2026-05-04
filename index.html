@@ -1,0 +1,2398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Road to PSLE — Polymath Learning Centre</title>
+<style>
+  /* ========================================================================
+     ROOT TOKENS — Polymath Pastel Calendar
+     Mixed pastel palette (each month / event type can flex its own pastel)
+     ======================================================================== */
+  :root {
+    /* Surfaces */
+    --bg-primary: #FFFFFF;
+    --bg-secondary: #FAFAFA;
+    --bg-tertiary: #F3F3F0;
+    --bg-soft: #FBFAF7;
+    --border-subtle: #E8E8E4;
+    --border-medium: #D4D4CF;
+
+    /* Text */
+    --text-primary: #1A1A1A;
+    --text-secondary: #5C5C5C;
+    --text-tertiary: #8A8A8A;
+    --text-inverse: #FFFFFF;
+
+    /* Pastel palette — used across event categories */
+    --pastel-pink: #FCE4EC;
+    --pastel-pink-deep: #F8BBD0;
+    --pastel-pink-text: #AD1457;
+
+    --pastel-peach: #FFE0B2;
+    --pastel-peach-deep: #FFCC80;
+    --pastel-peach-text: #E65100;
+
+    --pastel-lemon: #FFF9C4;
+    --pastel-lemon-deep: #FFF59D;
+    --pastel-lemon-text: #F57F17;
+
+    --pastel-mint: #C8E6C9;
+    --pastel-mint-deep: #A5D6A7;
+    --pastel-mint-text: #2E7D32;
+
+    --pastel-sky: #BBDEFB;
+    --pastel-sky-deep: #90CAF9;
+    --pastel-sky-text: #1565C0;
+
+    --pastel-lilac: #D1C4E9;
+    --pastel-lilac-deep: #B39DDB;
+    --pastel-lilac-text: #4527A0;
+
+    --pastel-rose: #FFCDD2;
+    --pastel-rose-deep: #EF9A9A;
+    --pastel-rose-text: #C62828;
+
+    --pastel-cream: #FFF8E1;
+    --pastel-cream-deep: #FFECB3;
+    --pastel-cream-text: #FF8F00;
+
+    /* Default accent (used for primary buttons / focus) */
+    --accent-light: #BBDEFB;
+    --accent-base: #64B5F6;
+    --accent-dark: #42A5F5;
+    --accent-bg: #E3F2FD;
+
+    /* Shadows */
+    --shadow-xs: 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.06);
+    --shadow-md: 0 2px 4px rgba(0,0,0,0.05), 0 6px 20px rgba(0,0,0,0.08);
+    --shadow-lg: 0 4px 6px rgba(0,0,0,0.05), 0 10px 30px rgba(0,0,0,0.1);
+    --shadow-xl: 0 8px 12px rgba(0,0,0,0.06), 0 20px 50px rgba(0,0,0,0.16);
+    --shadow-button: 0 1px 2px rgba(0,0,0,0.05), 0 2px 8px rgba(0,0,0,0.08);
+    --shadow-button-hover: 0 2px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.12);
+
+    /* Spacing */
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 40px;
+    --space-2xl: 64px;
+
+    /* Radius */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+    --radius-full: 999px;
+
+    /* Type */
+    --font-family: 'Century Gothic', CenturyGothic, AppleGothic, sans-serif;
+    --font-question: 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    --font-size-xs: 0.75rem;
+    --font-size-sm: 0.875rem;
+    --font-size-base: 1rem;
+    --font-size-md: 1.125rem;
+    --font-size-lg: 1.5rem;
+    --font-size-xl: 2rem;
+    --font-size-2xl: 2.5rem;
+    --line-height-tight: 1.2;
+    --line-height-normal: 1.6;
+
+    /* Transitions */
+    --transition-fast: 0.15s ease;
+    --transition-base: 0.25s ease;
+    --transition-slow: 0.4s ease;
+  }
+
+  /* ========================================================================
+     RESET
+     ======================================================================== */
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  html { font-size: 16px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  body {
+    font-family: var(--font-family);
+    color: var(--text-primary);
+    background: var(--bg-soft);
+    line-height: var(--line-height-normal);
+    min-height: 100vh;
+  }
+  img { max-width: 100%; display: block; }
+  input, button, select, textarea { font-family: inherit; }
+  button { cursor: pointer; }
+
+  /* ========================================================================
+     HEADER
+     ======================================================================== */
+  .polymath-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-md) var(--space-lg);
+    border-bottom: 1px solid var(--border-subtle);
+    background: var(--bg-primary);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  .polymath-logo {
+    height: 60px;
+    width: auto;
+    object-fit: contain;
+  }
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+  }
+  .auth-status {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+  }
+  .auth-status .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--pastel-sky);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: var(--pastel-sky-text);
+    overflow: hidden;
+  }
+  .auth-status .avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .badge-admin {
+    background: var(--pastel-lilac);
+    color: var(--pastel-lilac-text);
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: var(--radius-full);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* ========================================================================
+     HERO / PAGE TITLE
+     ======================================================================== */
+  .page-hero {
+    text-align: center;
+    padding: var(--space-2xl) var(--space-lg) var(--space-xl);
+    background: linear-gradient(180deg, #FFF8F2 0%, var(--bg-soft) 100%);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .page-eyebrow {
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--pastel-pink-text);
+    margin-bottom: var(--space-md);
+  }
+  .page-title {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: 0.01em;
+    margin-bottom: var(--space-md);
+    line-height: 1.15;
+  }
+  .page-title .accent-pink   { color: var(--pastel-pink-text); }
+  .page-title .accent-peach  { color: var(--pastel-peach-text); }
+  .page-title .accent-lilac  { color: var(--pastel-lilac-text); }
+  .page-subtitle {
+    font-size: var(--font-size-md);
+    font-weight: 400;
+    color: var(--text-secondary);
+    max-width: 640px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  /* ========================================================================
+     LAYOUT
+     ======================================================================== */
+  .container {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: var(--space-xl) var(--space-lg) var(--space-2xl);
+  }
+
+  /* ========================================================================
+     CALENDAR TOOLBAR
+     ======================================================================== */
+  .calendar-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+    padding: var(--space-md) var(--space-lg);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+  }
+  .month-nav {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+  }
+  .month-title {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: var(--text-primary);
+    min-width: 220px;
+    letter-spacing: 0.01em;
+  }
+  .nav-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    font-size: 1.2rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-base);
+    box-shadow: var(--shadow-xs);
+  }
+  .nav-btn:hover {
+    background: var(--pastel-sky);
+    color: var(--pastel-sky-text);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-button-hover);
+  }
+  .toolbar-actions {
+    display: flex;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+  }
+
+  /* ========================================================================
+     LEGEND
+     ======================================================================== */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+    padding: var(--space-md) var(--space-lg);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: var(--space-lg);
+    align-items: center;
+  }
+  .legend-label {
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-tertiary);
+    margin-right: var(--space-sm);
+  }
+  .legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+  .legend-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .legend-dot.lesson      { background: var(--pastel-mint-deep); }
+  .legend-dot.workshop    { background: var(--pastel-peach-deep); }
+  .legend-dot.assessment  { background: var(--pastel-rose-deep); }
+  .legend-dot.holiday     { background: var(--pastel-lemon-deep); }
+  .legend-dot.exam        { background: var(--pastel-lilac-deep); }
+  .legend-dot.resource    { background: var(--pastel-sky-deep); }
+  .legend-dot.milestone   { background: var(--pastel-pink-deep); }
+
+  /* ========================================================================
+     CALENDAR GRID
+     ======================================================================== */
+  .calendar {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+  }
+  .calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background: var(--bg-tertiary);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .weekday {
+    padding: var(--space-sm) var(--space-md);
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-tertiary);
+    text-align: center;
+  }
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-auto-rows: minmax(120px, auto);
+  }
+  .day-cell {
+    border-right: 1px solid var(--border-subtle);
+    border-bottom: 1px solid var(--border-subtle);
+    padding: var(--space-sm);
+    background: var(--bg-primary);
+    transition: background var(--transition-base);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-height: 120px;
+    cursor: pointer;
+  }
+  .day-cell:nth-child(7n) { border-right: none; }
+  .day-cell:hover { background: var(--bg-secondary); }
+  .day-cell.other-month {
+    background: var(--bg-secondary);
+    color: var(--text-tertiary);
+    opacity: 0.55;
+  }
+  .day-cell.today {
+    background: linear-gradient(180deg, #FFF8F2 0%, #FFFFFF 100%);
+    box-shadow: inset 0 0 0 2px var(--pastel-peach-deep);
+  }
+  .day-number {
+    font-size: var(--font-size-sm);
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin-bottom: 2px;
+  }
+  .day-cell.today .day-number {
+    background: var(--pastel-peach-deep);
+    color: var(--pastel-peach-text);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .day-events {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .event-pill {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    border: 1px solid transparent;
+  }
+  .event-pill:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-xs);
+  }
+  .event-pill.lesson      { background: var(--pastel-mint);   color: var(--pastel-mint-text); }
+  .event-pill.workshop    { background: var(--pastel-peach);  color: var(--pastel-peach-text); }
+  .event-pill.assessment  { background: var(--pastel-rose);   color: var(--pastel-rose-text); }
+  .event-pill.holiday     { background: var(--pastel-lemon);  color: var(--pastel-lemon-text); }
+  .event-pill.exam        { background: var(--pastel-lilac);  color: var(--pastel-lilac-text); }
+  .event-pill.resource    { background: var(--pastel-sky);    color: var(--pastel-sky-text); }
+  .event-pill.milestone   { background: var(--pastel-pink);   color: var(--pastel-pink-text); }
+
+  .add-day-btn {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--bg-tertiary);
+    color: var(--text-tertiary);
+    font-size: 14px;
+    line-height: 1;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    transition: all var(--transition-base);
+  }
+  body.is-admin .day-cell:hover .add-day-btn { display: inline-flex; }
+  .add-day-btn:hover {
+    background: var(--pastel-mint);
+    color: var(--pastel-mint-text);
+    transform: scale(1.1);
+  }
+
+  /* ========================================================================
+     BUTTONS
+     ======================================================================== */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    padding: 10px 22px;
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    font-family: var(--font-family);
+    cursor: pointer;
+    border: none;
+    transition: all var(--transition-base);
+    user-select: none;
+    outline: none;
+    white-space: nowrap;
+  }
+  .btn:focus-visible {
+    outline: 2px solid var(--accent-dark);
+    outline-offset: 2px;
+  }
+  .btn-primary {
+    background: var(--pastel-sky);
+    color: var(--pastel-sky-text);
+    box-shadow: var(--shadow-button);
+  }
+  .btn-primary:hover {
+    background: var(--pastel-sky-deep);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-button-hover);
+  }
+  .btn-secondary {
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-subtle);
+    box-shadow: var(--shadow-xs);
+  }
+  .btn-secondary:hover {
+    background: var(--bg-secondary);
+    border-color: var(--border-medium);
+    color: var(--text-primary);
+    transform: translateY(-1px);
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-secondary);
+    padding: 6px 14px;
+  }
+  .btn-ghost:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+  }
+  .btn-danger {
+    background: var(--pastel-rose);
+    color: var(--pastel-rose-text);
+    box-shadow: var(--shadow-button);
+  }
+  .btn-danger:hover {
+    background: var(--pastel-rose-deep);
+    transform: translateY(-1px);
+  }
+  .btn-google {
+    background: #FFFFFF;
+    color: #3C4043;
+    border: 1px solid #DADCE0;
+    padding: 10px 24px;
+    box-shadow: var(--shadow-button);
+  }
+  .btn-google:hover {
+    background: #F8F9FA;
+    box-shadow: var(--shadow-button-hover);
+    transform: translateY(-1px);
+  }
+  .btn-google img { width: 18px; height: 18px; }
+  .btn-block { width: 100%; }
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+
+  /* ========================================================================
+     MODAL
+     ======================================================================== */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 20, 25, 0.45);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: var(--space-md);
+    animation: fadeIn 0.2s ease;
+  }
+  .modal-backdrop.active {
+    display: flex;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .modal {
+    background: var(--bg-primary);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl);
+    width: 100%;
+    max-width: 560px;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .modal.modal-wide { max-width: 720px; }
+  .modal-header {
+    padding: var(--space-lg) var(--space-xl);
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .modal-title {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: 0.01em;
+  }
+  .modal-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    font-size: 16px;
+    line-height: 1;
+    transition: all var(--transition-base);
+  }
+  .modal-close:hover {
+    background: var(--pastel-rose);
+    color: var(--pastel-rose-text);
+    transform: rotate(90deg);
+  }
+  .modal-body {
+    padding: var(--space-xl);
+  }
+  .modal-footer {
+    padding: var(--space-md) var(--space-xl) var(--space-lg);
+    border-top: 1px solid var(--border-subtle);
+    display: flex;
+    gap: var(--space-sm);
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+
+  /* ========================================================================
+     FORMS
+     ======================================================================== */
+  .form-group {
+    margin-bottom: var(--space-md);
+  }
+  .form-label {
+    display: block;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+  }
+  .form-hint {
+    font-size: var(--font-size-xs);
+    color: var(--text-tertiary);
+    margin-top: 4px;
+  }
+  .form-input,
+  .form-select,
+  .form-textarea {
+    width: 100%;
+    padding: 10px 14px;
+    font-size: var(--font-size-sm);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    transition: all var(--transition-base);
+    font-family: inherit;
+  }
+  .form-input:focus,
+  .form-select:focus,
+  .form-textarea:focus {
+    outline: none;
+    border-color: var(--pastel-sky-deep);
+    box-shadow: 0 0 0 3px rgba(187, 222, 251, 0.4);
+  }
+  .form-textarea {
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+  }
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-md);
+  }
+  @media (max-width: 540px) {
+    .form-row { grid-template-columns: 1fr; }
+  }
+  .form-checkbox {
+    display: flex;
+    gap: var(--space-sm);
+    align-items: flex-start;
+    padding: var(--space-md);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-base);
+  }
+  .form-checkbox:hover {
+    background: var(--accent-bg);
+    border-color: var(--pastel-sky-deep);
+  }
+  .form-checkbox input[type="checkbox"] {
+    margin-top: 3px;
+    width: 16px;
+    height: 16px;
+    accent-color: var(--accent-base);
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+  .form-checkbox-text {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .form-checkbox-text strong {
+    color: var(--text-primary);
+  }
+
+  /* ========================================================================
+     CATEGORY PICKER
+     ======================================================================== */
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: var(--space-sm);
+  }
+  .category-option {
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-md);
+    border: 2px solid var(--border-subtle);
+    background: var(--bg-primary);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+  }
+  .category-option:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-xs);
+  }
+  .category-option.selected {
+    border-color: currentColor;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+  }
+  .category-option[data-cat="lesson"]      { color: var(--pastel-mint-text); }
+  .category-option[data-cat="lesson"].selected { background: var(--pastel-mint); }
+  .category-option[data-cat="workshop"]    { color: var(--pastel-peach-text); }
+  .category-option[data-cat="workshop"].selected { background: var(--pastel-peach); }
+  .category-option[data-cat="assessment"]  { color: var(--pastel-rose-text); }
+  .category-option[data-cat="assessment"].selected { background: var(--pastel-rose); }
+  .category-option[data-cat="holiday"]     { color: var(--pastel-lemon-text); }
+  .category-option[data-cat="holiday"].selected { background: var(--pastel-lemon); }
+  .category-option[data-cat="exam"]        { color: var(--pastel-lilac-text); }
+  .category-option[data-cat="exam"].selected { background: var(--pastel-lilac); }
+  .category-option[data-cat="resource"]    { color: var(--pastel-sky-text); }
+  .category-option[data-cat="resource"].selected { background: var(--pastel-sky); }
+  .category-option[data-cat="milestone"]   { color: var(--pastel-pink-text); }
+  .category-option[data-cat="milestone"].selected { background: var(--pastel-pink); }
+
+  /* ========================================================================
+     EVENT DETAIL VIEW
+     ======================================================================== */
+  .event-detail {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+  .event-detail-header {
+    padding: var(--space-md) var(--space-lg);
+    border-radius: var(--radius-md);
+    border-left: 4px solid currentColor;
+  }
+  .event-detail-header.lesson     { background: #F1F8E9; color: var(--pastel-mint-text); }
+  .event-detail-header.workshop   { background: #FFF3E0; color: var(--pastel-peach-text); }
+  .event-detail-header.assessment { background: #FFEBEE; color: var(--pastel-rose-text); }
+  .event-detail-header.holiday    { background: #FFFDE7; color: var(--pastel-lemon-text); }
+  .event-detail-header.exam       { background: #EDE7F6; color: var(--pastel-lilac-text); }
+  .event-detail-header.resource   { background: #E3F2FD; color: var(--pastel-sky-text); }
+  .event-detail-header.milestone  { background: #FCE4EC; color: var(--pastel-pink-text); }
+  .event-detail-cat {
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+  .event-detail-title {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+  .event-detail-meta {
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+  }
+  .event-detail-section {
+    padding: var(--space-md);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+  }
+  .event-detail-section-label {
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-tertiary);
+    margin-bottom: 6px;
+  }
+  .event-detail-description {
+    color: var(--text-secondary);
+    line-height: 1.7;
+    font-size: var(--font-size-sm);
+  }
+  .event-link-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+  .event-link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    color: var(--text-primary);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    transition: all var(--transition-base);
+  }
+  .event-link:hover {
+    border-color: var(--pastel-sky-deep);
+    background: var(--accent-bg);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-xs);
+  }
+  .event-link-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    background: var(--accent-bg);
+    color: var(--pastel-sky-text);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .event-link-icon.zoom { background: #E3F2FD; color: #1565C0; }
+  .event-link-icon.dropbox { background: #E3F2FD; color: #0061FF; }
+  .event-link-icon.file { background: #FFF3E0; color: #E65100; }
+  .event-link-text {
+    flex-grow: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .event-link-action {
+    color: var(--text-tertiary);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* ========================================================================
+     LINK BUILDER (admin)
+     ======================================================================== */
+  .link-builder {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+  .link-row {
+    display: grid;
+    grid-template-columns: 110px 1fr 1fr auto;
+    gap: var(--space-sm);
+    align-items: center;
+  }
+  .link-row .form-input,
+  .link-row .form-select { padding: 8px 10px; font-size: var(--font-size-sm); }
+  .link-row .remove-link-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--bg-tertiary);
+    border: none;
+    color: var(--text-secondary);
+    font-size: 14px;
+    transition: all var(--transition-base);
+  }
+  .link-row .remove-link-btn:hover {
+    background: var(--pastel-rose);
+    color: var(--pastel-rose-text);
+  }
+  @media (max-width: 540px) {
+    .link-row { grid-template-columns: 1fr; }
+  }
+
+  .file-upload-area {
+    border: 2px dashed var(--border-medium);
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
+    text-align: center;
+    transition: all var(--transition-base);
+    background: var(--bg-secondary);
+    cursor: pointer;
+  }
+  .file-upload-area:hover {
+    border-color: var(--pastel-sky-deep);
+    background: var(--accent-bg);
+  }
+  .file-upload-area.dragover {
+    border-color: var(--pastel-sky-deep);
+    background: var(--accent-bg);
+    transform: scale(1.01);
+  }
+  .file-upload-area input[type="file"] { display: none; }
+  .file-upload-icon {
+    font-size: 24px;
+    margin-bottom: 4px;
+    color: var(--text-tertiary);
+  }
+  .file-upload-text {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+  }
+  .file-upload-sub {
+    font-size: var(--font-size-xs);
+    color: var(--text-tertiary);
+  }
+  .upload-progress {
+    margin-top: var(--space-sm);
+    height: 6px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    display: none;
+  }
+  .upload-progress.active { display: block; }
+  .upload-progress-bar {
+    height: 100%;
+    background: var(--pastel-mint-deep);
+    width: 0%;
+    transition: width 0.3s ease;
+  }
+
+  /* ========================================================================
+     LOGIN MODAL
+     ======================================================================== */
+  .login-modal-body {
+    text-align: center;
+    padding: var(--space-xl);
+  }
+  .login-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--pastel-pink);
+    color: var(--pastel-pink-text);
+    margin: 0 auto var(--space-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+  }
+  .login-title {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    margin-bottom: var(--space-sm);
+  }
+  .login-sub {
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--space-lg);
+    max-width: 360px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .login-form-section {
+    margin-top: var(--space-lg);
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--border-subtle);
+    text-align: left;
+  }
+  .login-divider {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    margin: var(--space-md) 0;
+    color: var(--text-tertiary);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .login-divider::before,
+  .login-divider::after {
+    content: '';
+    flex-grow: 1;
+    height: 1px;
+    background: var(--border-subtle);
+  }
+
+  /* ========================================================================
+     REGISTRATION MODAL
+     ======================================================================== */
+  .reg-event-summary {
+    padding: var(--space-md);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-md);
+    border-left: 4px solid var(--pastel-sky-deep);
+  }
+  .reg-event-name {
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    font-size: var(--font-size-base);
+  }
+  .reg-event-when {
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+  }
+  .reg-fee-notice {
+    padding: var(--space-md) var(--space-lg);
+    background: linear-gradient(135deg, #FFF8E1 0%, #FFECB3 100%);
+    border: 1px solid #FFE082;
+    border-radius: var(--radius-md);
+    color: #5D4037;
+    font-size: var(--font-size-sm);
+    line-height: 1.7;
+    margin-bottom: var(--space-md);
+  }
+  .reg-fee-notice strong {
+    color: var(--pastel-cream-text);
+  }
+  .reg-fee-amount {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: var(--pastel-cream-text);
+    display: inline-block;
+  }
+
+  /* ========================================================================
+     TOAST NOTIFICATIONS
+     ======================================================================== */
+  .toast-container {
+    position: fixed;
+    bottom: var(--space-lg);
+    right: var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    z-index: 200;
+    pointer-events: none;
+  }
+  .toast {
+    pointer-events: auto;
+    padding: var(--space-md) var(--space-lg);
+    background: var(--bg-primary);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    min-width: 280px;
+    max-width: 400px;
+    font-size: var(--font-size-sm);
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    border-left: 4px solid var(--pastel-sky-deep);
+    animation: toastIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .toast.success { border-left-color: var(--pastel-mint-deep); }
+  .toast.error   { border-left-color: var(--pastel-rose-deep); }
+  .toast.info    { border-left-color: var(--pastel-sky-deep); }
+  .toast.warning { border-left-color: var(--pastel-cream-deep); }
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes toastOut {
+    to { opacity: 0; transform: translateX(20px); }
+  }
+  .toast.exiting {
+    animation: toastOut 0.3s ease forwards;
+  }
+
+  /* ========================================================================
+     EMPTY STATE / LOADING
+     ======================================================================== */
+  .empty-state {
+    text-align: center;
+    padding: var(--space-2xl) var(--space-lg);
+    color: var(--text-tertiary);
+  }
+  .empty-state-icon {
+    font-size: 48px;
+    margin-bottom: var(--space-md);
+  }
+  .loading-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(0,0,0,0.1);
+    border-left-color: var(--accent-dark);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* ========================================================================
+     FOOTER
+     ======================================================================== */
+  .page-footer {
+    text-align: center;
+    padding: var(--space-xl) var(--space-lg) var(--space-2xl);
+    color: var(--text-tertiary);
+    font-size: var(--font-size-xs);
+    border-top: 1px solid var(--border-subtle);
+    background: var(--bg-primary);
+    margin-top: var(--space-2xl);
+  }
+
+  /* ========================================================================
+     PAGE FADE-IN
+     ======================================================================== */
+  @keyframes pageFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  main { animation: pageFadeIn 0.6s ease both; }
+
+  /* ========================================================================
+     RESPONSIVE
+     ======================================================================== */
+  @media (max-width: 760px) {
+    .container { padding: var(--space-md); }
+    .calendar-toolbar { flex-direction: column; align-items: stretch; }
+    .month-nav { justify-content: center; }
+    .month-title { min-width: 0; text-align: center; flex-grow: 1; }
+    .toolbar-actions { justify-content: center; }
+    .day-cell { min-height: 84px; padding: 4px; }
+    .day-number { font-size: var(--font-size-xs); }
+    .event-pill { font-size: 10px; padding: 2px 5px; }
+    .weekday { padding: 6px 4px; font-size: 10px; }
+    .calendar-grid { grid-auto-rows: minmax(84px, auto); }
+    .legend { padding: var(--space-sm); }
+    .legend-item { font-size: var(--font-size-xs); }
+    .modal-body { padding: var(--space-lg); }
+    .modal-header { padding: var(--space-md) var(--space-lg); }
+    .header-actions { gap: var(--space-sm); }
+    .auth-status { font-size: var(--font-size-xs); }
+    .auth-status .name-text { display: none; }
+  }
+  @media (max-width: 480px) {
+    .polymath-logo { height: 44px; }
+    .page-hero { padding: var(--space-lg) var(--space-md); }
+    .page-title { font-size: 1.6rem; }
+    .day-cell { min-height: 72px; }
+    .event-pill { font-size: 9px; }
+  }
+
+  /* ========================================================================
+     PRINT
+     ======================================================================== */
+  @page { size: A4 landscape; margin: 12mm; }
+  @media print {
+    .header-actions,
+    .toolbar-actions,
+    .nav-btn,
+    .add-day-btn,
+    .modal-backdrop,
+    .toast-container,
+    .page-footer { display: none !important; }
+    body { background: #FFFFFF; }
+    .day-cell { box-shadow: none !important; min-height: 90px; }
+    .calendar { box-shadow: none; }
+    .event-pill { box-shadow: none; }
+    .calendar-toolbar, .legend { box-shadow: none; }
+    .polymath-header {
+      position: static;
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     HEADER
+     ============================================================ -->
+<header class="polymath-header">
+  <img src="https://dl.dropboxusercontent.com/scl/fi/h40yjlyg8ldefwfaa3dib/polymath-logo-sticker.png?rlkey=o1ra4taqy79gt9t8u096v82zj"
+       alt="Polymath Learning Centre"
+       class="polymath-logo" />
+  <div class="header-actions" id="headerActions">
+    <!-- Filled by JS based on auth state -->
+  </div>
+</header>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<section class="page-hero">
+  <div class="page-eyebrow">Polymath Learning Centre</div>
+  <h1 class="page-title">
+    The Road to <span class="accent-pink">PSLE</span>
+  </h1>
+  <p class="page-subtitle">
+    Every lesson, workshop, mock paper and milestone on your child's journey to the
+    Primary School Leaving Examination — laid out month by month so nothing falls through the cracks.
+  </p>
+</section>
+
+<!-- ============================================================
+     MAIN
+     ============================================================ -->
+<main>
+  <div class="container">
+
+    <!-- TOOLBAR -->
+    <div class="calendar-toolbar">
+      <div class="month-nav">
+        <button class="nav-btn" id="prevMonthBtn" aria-label="Previous month">‹</button>
+        <div class="month-title" id="monthTitle">Loading…</div>
+        <button class="nav-btn" id="nextMonthBtn" aria-label="Next month">›</button>
+        <button class="btn btn-ghost" id="todayBtn">Today</button>
+      </div>
+      <div class="toolbar-actions" id="toolbarActions">
+        <!-- Add Event button shown for admin only — injected by JS -->
+      </div>
+    </div>
+
+    <!-- LEGEND -->
+    <div class="legend">
+      <span class="legend-label">Legend</span>
+      <span class="legend-item"><span class="legend-dot lesson"></span>Lesson</span>
+      <span class="legend-item"><span class="legend-dot workshop"></span>Workshop</span>
+      <span class="legend-item"><span class="legend-dot assessment"></span>Mock / Assessment</span>
+      <span class="legend-item"><span class="legend-dot exam"></span>PSLE Exam</span>
+      <span class="legend-item"><span class="legend-dot milestone"></span>Milestone</span>
+      <span class="legend-item"><span class="legend-dot resource"></span>Resource Drop</span>
+      <span class="legend-item"><span class="legend-dot holiday"></span>Holiday</span>
+    </div>
+
+    <!-- CALENDAR -->
+    <div class="calendar">
+      <div class="calendar-weekdays">
+        <div class="weekday">Sun</div>
+        <div class="weekday">Mon</div>
+        <div class="weekday">Tue</div>
+        <div class="weekday">Wed</div>
+        <div class="weekday">Thu</div>
+        <div class="weekday">Fri</div>
+        <div class="weekday">Sat</div>
+      </div>
+      <div class="calendar-grid" id="calendarGrid">
+        <!-- Days injected by JS -->
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="page-footer">
+  <p>© Polymath Learning Centre · Singapore · The Road to PSLE</p>
+</footer>
+
+<!-- ============================================================
+     LOGIN MODAL
+     ============================================================ -->
+<div class="modal-backdrop" id="loginModal" data-modal>
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Sign in</div>
+      <button class="modal-close" data-close>×</button>
+    </div>
+    <div class="login-modal-body">
+      <div class="login-icon">🎓</div>
+      <div class="login-title">Welcome to The Road to PSLE</div>
+      <div class="login-sub">
+        Sign in as a parent to register for lessons and access lesson resources.
+      </div>
+      <button class="btn btn-google btn-block" id="googleSignInBtn">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" />
+        Continue with Google
+      </button>
+      <div class="login-divider">or</div>
+      <div class="login-form-section">
+        <div class="form-group">
+          <label class="form-label" for="emailInput">Email</label>
+          <input type="email" class="form-input" id="emailInput" placeholder="parent@example.com" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="passwordInput">Password</label>
+          <input type="password" class="form-input" id="passwordInput" placeholder="Enter password" />
+        </div>
+        <div style="display: flex; gap: var(--space-sm);">
+          <button class="btn btn-secondary" id="emailSignInBtn" style="flex: 1;">Sign in</button>
+          <button class="btn btn-primary" id="emailSignUpBtn" style="flex: 1;">Create account</button>
+        </div>
+        <div class="form-hint" style="text-align: center; margin-top: var(--space-sm);">
+          New here? Create an account using your email.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     EVENT EDITOR MODAL (Admin only)
+     ============================================================ -->
+<div class="modal-backdrop" id="eventEditorModal" data-modal>
+  <div class="modal modal-wide">
+    <div class="modal-header">
+      <div class="modal-title" id="eventEditorTitle">Add Event</div>
+      <button class="modal-close" data-close>×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Category</label>
+        <div class="category-grid" id="categoryGrid">
+          <button type="button" class="category-option" data-cat="lesson">Lesson</button>
+          <button type="button" class="category-option" data-cat="workshop">Workshop</button>
+          <button type="button" class="category-option" data-cat="assessment">Mock</button>
+          <button type="button" class="category-option" data-cat="exam">PSLE Exam</button>
+          <button type="button" class="category-option" data-cat="milestone">Milestone</button>
+          <button type="button" class="category-option" data-cat="resource">Resource</button>
+          <button type="button" class="category-option" data-cat="holiday">Holiday</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="eventTitle">Title</label>
+        <input type="text" class="form-input" id="eventTitle" placeholder="e.g. P6 Math — Algebraic Heuristics" />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="eventDate">Date</label>
+          <input type="date" class="form-input" id="eventDate" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="eventTime">Time (optional)</label>
+          <input type="time" class="form-input" id="eventTime" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="eventDescription">Description</label>
+        <textarea class="form-textarea" id="eventDescription" placeholder="What will be covered, what students should bring, prep notes…"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Links (Zoom, Dropbox, etc.)</label>
+        <div class="link-builder" id="linkBuilder"></div>
+        <button type="button" class="btn btn-secondary" id="addLinkBtn" style="margin-top: var(--space-sm);">+ Add link</button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Attach files for students to download</label>
+        <label class="file-upload-area" id="fileDropArea">
+          <div class="file-upload-icon">📎</div>
+          <div class="file-upload-text">Click to upload or drag &amp; drop</div>
+          <div class="file-upload-sub">PDFs, worksheets, slides — uploaded to Polymath Firebase</div>
+          <input type="file" id="fileInput" multiple />
+        </label>
+        <div class="upload-progress" id="uploadProgress">
+          <div class="upload-progress-bar" id="uploadProgressBar"></div>
+        </div>
+        <div class="link-builder" id="uploadedFilesList" style="margin-top: var(--space-sm);"></div>
+      </div>
+
+      <div class="form-checkbox" id="registrationToggleWrap" style="cursor: pointer;">
+        <input type="checkbox" id="enableRegistration" />
+        <span class="form-checkbox-text">
+          <strong>Enable parent registration</strong><br/>
+          Parents will see a "Register" button on this event. They must agree to be a paying customer
+          before the registration link (Zoom, etc.) is revealed.
+        </span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger" id="deleteEventBtn" style="margin-right: auto; display: none;">Delete</button>
+      <button class="btn btn-secondary" data-close>Cancel</button>
+      <button class="btn btn-primary" id="saveEventBtn">Save Event</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     EVENT DETAIL MODAL (Read view)
+     ============================================================ -->
+<div class="modal-backdrop" id="eventDetailModal" data-modal>
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Event Details</div>
+      <button class="modal-close" data-close>×</button>
+    </div>
+    <div class="modal-body" id="eventDetailBody">
+      <!-- Filled by JS -->
+    </div>
+    <div class="modal-footer" id="eventDetailFooter">
+      <!-- Filled by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     REGISTRATION CONFIRM MODAL
+     ============================================================ -->
+<div class="modal-backdrop" id="registrationModal" data-modal>
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Confirm Registration</div>
+      <button class="modal-close" data-close>×</button>
+    </div>
+    <div class="modal-body">
+      <div class="reg-event-summary" id="regEventSummary">
+        <!-- Filled by JS -->
+      </div>
+
+      <div class="reg-fee-notice">
+        <strong>Important — please read carefully.</strong>
+        By registering, you confirm that you are an enrolled, paying customer of
+        Polymath Learning Centre. If you are <strong>not</strong> a current paying student,
+        you agree to be charged
+        <span class="reg-fee-amount">S$100 per lesson</span>
+        attended.
+      </div>
+
+      <label class="form-checkbox" style="margin-bottom: var(--space-md);">
+        <input type="checkbox" id="agreeFee" />
+        <span class="form-checkbox-text">
+          I have read and agree to the above. I confirm I am either an enrolled student of
+          Polymath Learning Centre, or I accept the
+          <strong>S$100 per lesson</strong> charge for any lesson I attend without enrolment.
+        </span>
+      </label>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="regChildName">Child's name</label>
+          <input type="text" class="form-input" id="regChildName" placeholder="Tan Wei Ming" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="regChildLevel">Level</label>
+          <select class="form-select" id="regChildLevel">
+            <option value="">Select level</option>
+            <option value="P3">Primary 3</option>
+            <option value="P4">Primary 4</option>
+            <option value="P5">Primary 5</option>
+            <option value="P6">Primary 6</option>
+            <option value="Sec 1">Secondary 1</option>
+            <option value="Sec 2">Secondary 2</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" data-close>Cancel</button>
+      <button class="btn btn-primary" id="confirmRegistrationBtn" disabled>Confirm Registration</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     TOAST CONTAINER
+     ============================================================ -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ============================================================
+     FIREBASE
+     ============================================================ -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+
+<script>
+/* ============================================================
+   FIREBASE INIT — Polymath shared project
+   ============================================================ */
+const firebaseConfig = {
+  apiKey: "AIzaSyAUSI3Uh28IeqASEp0JhH4QPaVt-O3meBo",
+  authDomain: "mathgen--app.firebaseapp.com",
+  projectId: "mathgen--app",
+  storageBucket: "mathgen--app.firebasestorage.app",
+  messagingSenderId: "165654161198",
+  appId: "1:165654161198:web:16c8bd60eb3a2aa7edbcbf",
+  measurementId: "G-0MWZFG211D"
+};
+firebase.initializeApp(firebaseConfig);
+const db      = firebase.firestore();
+const auth    = firebase.auth();
+const storage = firebase.storage();
+
+const ADMIN_EMAIL = "chungzhikai@gmail.com";
+const EVENTS_COLLECTION       = "psleRoadEvents";
+const REGISTRATIONS_COLLECTION = "psleRoadRegistrations";
+
+/* ============================================================
+   APP STATE
+   ============================================================ */
+const state = {
+  currentDate: new Date(),    // controls which month is rendered
+  currentUser: null,
+  isAdmin: false,
+  events: [],                 // all events from Firestore
+  editorEvent: null,          // event currently being edited (null = new)
+  selectedCategory: "lesson",
+  uploadedFiles: [],          // files attached during current edit session
+  links: [],                  // links being added during current edit session
+  pendingRegistrationEvent: null,
+};
+
+/* ============================================================
+   TINY DOM HELPERS
+   ============================================================ */
+function $(sel)   { return document.querySelector(sel); }
+function $$(sel)  { return Array.from(document.querySelectorAll(sel)); }
+function el(tag, attrs, children) {
+  const node = document.createElement(tag);
+  if (attrs) {
+    for (const k in attrs) {
+      if (k === "class")       node.className = attrs[k];
+      else if (k === "style")  node.style.cssText = attrs[k];
+      else if (k.startsWith("on")) node[k] = attrs[k];
+      else if (k === "html")   node.innerHTML = attrs[k];
+      else                     node.setAttribute(k, attrs[k]);
+    }
+  }
+  if (children) {
+    (Array.isArray(children) ? children : [children]).forEach(function(c) {
+      if (c == null) return;
+      if (typeof c === "string") node.appendChild(document.createTextNode(c));
+      else node.appendChild(c);
+    });
+  }
+  return node;
+}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+function toast(message, kind) {
+  kind = kind || "info";
+  const t = el("div", { class: "toast " + kind }, message);
+  $("#toastContainer").appendChild(t);
+  setTimeout(function() {
+    t.classList.add("exiting");
+    setTimeout(function() { t.remove(); }, 300);
+  }, 3500);
+}
+
+/* ============================================================
+   MODAL HELPERS
+   ============================================================ */
+function openModal(id) {
+  const m = document.getElementById(id);
+  if (m) m.classList.add("active");
+}
+function closeModal(id) {
+  const m = document.getElementById(id);
+  if (m) m.classList.remove("active");
+}
+function closeAllModals() {
+  $$(".modal-backdrop").forEach(function(m) { m.classList.remove("active"); });
+}
+// click backdrop or close button
+document.addEventListener("click", function(ev) {
+  if (ev.target.matches(".modal-backdrop")) {
+    ev.target.classList.remove("active");
+  }
+  if (ev.target.matches("[data-close]")) {
+    const modal = ev.target.closest(".modal-backdrop");
+    if (modal) modal.classList.remove("active");
+  }
+});
+document.addEventListener("keydown", function(ev) {
+  if (ev.key === "Escape") closeAllModals();
+});
+
+/* ============================================================
+   DATE HELPERS
+   ============================================================ */
+const MONTH_NAMES = ["January","February","March","April","May","June",
+                     "July","August","September","October","November","December"];
+
+function pad2(n) { return String(n).padStart(2, "0"); }
+function isoDate(d) {
+  return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate());
+}
+function startOfMonth(d) { return new Date(d.getFullYear(), d.getMonth(), 1); }
+function endOfMonth(d)   { return new Date(d.getFullYear(), d.getMonth() + 1, 0); }
+function isSameDay(a, b) {
+  return a.getFullYear() === b.getFullYear() &&
+         a.getMonth() === b.getMonth() &&
+         a.getDate() === b.getDate();
+}
+function formatNiceDate(isoStr) {
+  const parts = isoStr.split("-");
+  if (parts.length !== 3) return isoStr;
+  const d = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+  const dayNames = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  return dayNames[d.getDay()] + ", " + d.getDate() + " " + MONTH_NAMES[d.getMonth()] + " " + d.getFullYear();
+}
+function formatTime12(timeStr) {
+  if (!timeStr) return "";
+  const parts = timeStr.split(":");
+  const h = +parts[0], m = parts[1];
+  const ampm = h >= 12 ? "PM" : "AM";
+  const h12 = ((h % 12) || 12);
+  return h12 + ":" + m + " " + ampm;
+}
+
+/* ============================================================
+   AUTH
+   ============================================================ */
+auth.onAuthStateChanged(function(user) {
+  state.currentUser = user;
+  state.isAdmin = !!(user && user.email && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
+  document.body.classList.toggle("is-admin", state.isAdmin);
+  renderHeader();
+  renderToolbar();
+  // Re-render in case admin-only buttons need to show/hide
+  renderCalendar();
+});
+
+function renderHeader() {
+  const root = $("#headerActions");
+  root.innerHTML = "";
+  if (state.currentUser) {
+    const u = state.currentUser;
+    const initial = ((u.displayName || u.email || "?")[0] || "?").toUpperCase();
+    const wrap = el("div", { class: "auth-status" });
+    const av = el("span", { class: "avatar" });
+    if (u.photoURL) {
+      av.appendChild(el("img", { src: u.photoURL, alt: "" }));
+    } else {
+      av.textContent = initial;
+    }
+    wrap.appendChild(av);
+    const nameText = el("span", { class: "name-text" }, u.displayName || u.email);
+    wrap.appendChild(nameText);
+    if (state.isAdmin) {
+      wrap.appendChild(el("span", { class: "badge-admin" }, "Admin"));
+    }
+    root.appendChild(wrap);
+    const signOutBtn = el("button", {
+      class: "btn btn-ghost",
+      onclick: function() { auth.signOut().then(function() { toast("Signed out", "info"); }); }
+    }, "Sign out");
+    root.appendChild(signOutBtn);
+  } else {
+    const signInBtn = el("button", {
+      class: "btn btn-primary",
+      onclick: function() { openModal("loginModal"); }
+    }, "Sign in");
+    root.appendChild(signInBtn);
+  }
+}
+
+function renderToolbar() {
+  const root = $("#toolbarActions");
+  root.innerHTML = "";
+  if (state.isAdmin) {
+    const addBtn = el("button", {
+      class: "btn btn-primary",
+      onclick: function() { openEventEditor(null, null); }
+    }, "+ Add Event");
+    root.appendChild(addBtn);
+  }
+  const printBtn = el("button", {
+    class: "btn btn-secondary",
+    onclick: function() { window.print(); }
+  }, "Print");
+  root.appendChild(printBtn);
+}
+
+/* Login handlers */
+$("#googleSignInBtn").addEventListener("click", function() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider).then(function(result) {
+    closeModal("loginModal");
+    toast("Welcome, " + (result.user.displayName || result.user.email) + "!", "success");
+  }).catch(function(err) {
+    console.error(err);
+    toast("Sign-in failed: " + err.message, "error");
+  });
+});
+$("#emailSignInBtn").addEventListener("click", function() {
+  const email = $("#emailInput").value.trim();
+  const pw    = $("#passwordInput").value;
+  if (!email || !pw) { toast("Please enter email and password", "warning"); return; }
+  auth.signInWithEmailAndPassword(email, pw).then(function() {
+    closeModal("loginModal");
+    toast("Signed in", "success");
+  }).catch(function(err) { toast(err.message, "error"); });
+});
+$("#emailSignUpBtn").addEventListener("click", function() {
+  const email = $("#emailInput").value.trim();
+  const pw    = $("#passwordInput").value;
+  if (!email || !pw) { toast("Please enter email and password", "warning"); return; }
+  if (pw.length < 6) { toast("Password must be at least 6 characters", "warning"); return; }
+  auth.createUserWithEmailAndPassword(email, pw).then(function() {
+    closeModal("loginModal");
+    toast("Account created — welcome!", "success");
+  }).catch(function(err) { toast(err.message, "error"); });
+});
+
+/* ============================================================
+   EVENTS — load from Firestore in real time
+   ============================================================ */
+db.collection(EVENTS_COLLECTION)
+  .orderBy("date", "asc")
+  .onSnapshot(function(snapshot) {
+    state.events = snapshot.docs.map(function(doc) {
+      const data = doc.data();
+      data.id = doc.id;
+      return data;
+    });
+    renderCalendar();
+  }, function(err) {
+    console.error("Failed to load events:", err);
+    toast("Couldn't load events: " + err.message, "error");
+  });
+
+/* ============================================================
+   CALENDAR RENDER
+   ============================================================ */
+function renderCalendar() {
+  const grid = $("#calendarGrid");
+  const monthTitle = $("#monthTitle");
+  const cur = state.currentDate;
+  monthTitle.textContent = MONTH_NAMES[cur.getMonth()] + " " + cur.getFullYear();
+
+  const firstOfMonth = startOfMonth(cur);
+  const startDay     = firstOfMonth.getDay();      // 0 = Sunday
+  const daysInMonth  = endOfMonth(cur).getDate();
+  const today        = new Date();
+
+  // We'll render exactly 6 rows × 7 cols = 42 cells
+  const cells = [];
+  // Previous month tail
+  const prevMonthEnd = new Date(cur.getFullYear(), cur.getMonth(), 0);
+  const prevDays     = prevMonthEnd.getDate();
+  for (let i = startDay - 1; i >= 0; i--) {
+    cells.push({
+      date: new Date(cur.getFullYear(), cur.getMonth() - 1, prevDays - i),
+      otherMonth: true
+    });
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    cells.push({
+      date: new Date(cur.getFullYear(), cur.getMonth(), d),
+      otherMonth: false
+    });
+  }
+  while (cells.length < 42) {
+    const last = cells[cells.length - 1].date;
+    const nxt = new Date(last);
+    nxt.setDate(last.getDate() + 1);
+    cells.push({ date: nxt, otherMonth: nxt.getMonth() !== cur.getMonth() });
+  }
+
+  grid.innerHTML = "";
+  cells.forEach(function(cell) {
+    const dateIso = isoDate(cell.date);
+    const dayEvents = state.events.filter(function(e) { return e.date === dateIso; });
+    const cls = ["day-cell"];
+    if (cell.otherMonth) cls.push("other-month");
+    if (isSameDay(cell.date, today)) cls.push("today");
+    const dayCell = el("div", {
+      class: cls.join(" "),
+      onclick: function(ev) {
+        // If user clicked the "+" admin button, that's handled separately
+        if (ev.target.classList.contains("add-day-btn")) return;
+        // If they clicked an event pill, that opens detail (separate handler)
+        if (ev.target.classList.contains("event-pill")) return;
+        // Empty-cell click on a day in the same month: admin -> add event, else nothing
+        if (state.isAdmin && !cell.otherMonth) {
+          openEventEditor(null, dateIso);
+        }
+      }
+    });
+    dayCell.appendChild(el("div", { class: "day-number" }, String(cell.date.getDate())));
+
+    if (state.isAdmin && !cell.otherMonth) {
+      const plusBtn = el("button", {
+        class: "add-day-btn",
+        title: "Add event on this day",
+        onclick: function(ev) {
+          ev.stopPropagation();
+          openEventEditor(null, dateIso);
+        }
+      }, "+");
+      dayCell.appendChild(plusBtn);
+    }
+
+    if (dayEvents.length) {
+      const eventsWrap = el("div", { class: "day-events" });
+      dayEvents.slice(0, 3).forEach(function(evt) {
+        const pill = el("div", {
+          class: "event-pill " + (evt.category || "lesson"),
+          title: evt.title,
+          onclick: function(e) {
+            e.stopPropagation();
+            openEventDetail(evt);
+          }
+        }, evt.title);
+        eventsWrap.appendChild(pill);
+      });
+      if (dayEvents.length > 3) {
+        const more = el("div", {
+          class: "event-pill",
+          style: "background: var(--bg-tertiary); color: var(--text-tertiary);",
+          onclick: function(e) {
+            e.stopPropagation();
+            openEventDetail(dayEvents[0], dayEvents);
+          }
+        }, "+ " + (dayEvents.length - 3) + " more");
+        eventsWrap.appendChild(more);
+      }
+      dayCell.appendChild(eventsWrap);
+    }
+    grid.appendChild(dayCell);
+  });
+}
+
+/* Nav buttons */
+$("#prevMonthBtn").addEventListener("click", function() {
+  state.currentDate = new Date(state.currentDate.getFullYear(), state.currentDate.getMonth() - 1, 1);
+  renderCalendar();
+});
+$("#nextMonthBtn").addEventListener("click", function() {
+  state.currentDate = new Date(state.currentDate.getFullYear(), state.currentDate.getMonth() + 1, 1);
+  renderCalendar();
+});
+$("#todayBtn").addEventListener("click", function() {
+  state.currentDate = new Date();
+  renderCalendar();
+});
+
+/* ============================================================
+   EVENT EDITOR (Admin)
+   ============================================================ */
+function openEventEditor(existingEvent, prefilledDate) {
+  if (!state.isAdmin) {
+    toast("Admin only", "warning");
+    return;
+  }
+  state.editorEvent  = existingEvent;
+  state.uploadedFiles = existingEvent && existingEvent.files ? existingEvent.files.slice() : [];
+  state.links         = existingEvent && existingEvent.links ? existingEvent.links.slice() : [];
+  state.selectedCategory = existingEvent ? (existingEvent.category || "lesson") : "lesson";
+
+  $("#eventEditorTitle").textContent = existingEvent ? "Edit Event" : "Add Event";
+  $("#eventTitle").value       = existingEvent ? existingEvent.title : "";
+  $("#eventDate").value        = existingEvent ? existingEvent.date : (prefilledDate || isoDate(new Date()));
+  $("#eventTime").value        = existingEvent ? (existingEvent.time || "") : "";
+  $("#eventDescription").value = existingEvent ? (existingEvent.description || "") : "";
+  $("#enableRegistration").checked = existingEvent ? !!existingEvent.registrationEnabled : false;
+
+  // Category buttons
+  $$(".category-option").forEach(function(b) {
+    b.classList.toggle("selected", b.dataset.cat === state.selectedCategory);
+  });
+
+  // Render link rows
+  renderLinkBuilder();
+  renderUploadedFilesList();
+
+  // Show/hide delete button
+  $("#deleteEventBtn").style.display = existingEvent ? "" : "none";
+
+  // Reset upload progress
+  $("#uploadProgress").classList.remove("active");
+  $("#uploadProgressBar").style.width = "0%";
+
+  openModal("eventEditorModal");
+}
+
+/* Category select */
+$$(".category-option").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    state.selectedCategory = btn.dataset.cat;
+    $$(".category-option").forEach(function(b) {
+      b.classList.toggle("selected", b === btn);
+    });
+  });
+});
+
+/* Link builder */
+function renderLinkBuilder() {
+  const wrap = $("#linkBuilder");
+  wrap.innerHTML = "";
+  state.links.forEach(function(link, idx) {
+    const row = el("div", { class: "link-row" });
+    const select = el("select", { class: "form-select" }, [
+      el("option", { value: "zoom" },     "Zoom"),
+      el("option", { value: "dropbox" },  "Dropbox"),
+      el("option", { value: "registration" }, "Registration"),
+      el("option", { value: "other" },    "Other")
+    ]);
+    select.value = link.type || "other";
+    select.addEventListener("change", function() { state.links[idx].type = select.value; });
+    const label = el("input", {
+      type: "text",
+      class: "form-input",
+      placeholder: "Label (e.g. 'Lesson Zoom Room')",
+      value: link.label || ""
+    });
+    label.addEventListener("input", function() { state.links[idx].label = label.value; });
+    const url = el("input", {
+      type: "url",
+      class: "form-input",
+      placeholder: "https://...",
+      value: link.url || ""
+    });
+    url.addEventListener("input", function() { state.links[idx].url = url.value; });
+    const remove = el("button", {
+      type: "button",
+      class: "remove-link-btn",
+      title: "Remove this link",
+      onclick: function() {
+        state.links.splice(idx, 1);
+        renderLinkBuilder();
+      }
+    }, "×");
+    row.appendChild(select);
+    row.appendChild(label);
+    row.appendChild(url);
+    row.appendChild(remove);
+    wrap.appendChild(row);
+  });
+}
+$("#addLinkBtn").addEventListener("click", function() {
+  state.links.push({ type: "zoom", label: "", url: "" });
+  renderLinkBuilder();
+});
+
+/* Uploaded files list */
+function renderUploadedFilesList() {
+  const wrap = $("#uploadedFilesList");
+  wrap.innerHTML = "";
+  state.uploadedFiles.forEach(function(file, idx) {
+    const row = el("div", { class: "event-link" }, [
+      el("div", { class: "event-link-icon file" }, "📄"),
+      el("div", { class: "event-link-text" }, file.name),
+      el("button", {
+        type: "button",
+        class: "remove-link-btn",
+        title: "Remove",
+        onclick: function() {
+          // Best-effort: also delete from Storage
+          if (file.storagePath) {
+            storage.ref(file.storagePath).delete().catch(function(err) {
+              console.warn("Couldn't delete from storage:", err);
+            });
+          }
+          state.uploadedFiles.splice(idx, 1);
+          renderUploadedFilesList();
+        }
+      }, "×")
+    ]);
+    wrap.appendChild(row);
+  });
+}
+
+/* File upload */
+const fileDropArea = $("#fileDropArea");
+const fileInput    = $("#fileInput");
+fileDropArea.addEventListener("click", function() { fileInput.click(); });
+fileInput.addEventListener("change", function() { handleFileUpload(fileInput.files); });
+fileDropArea.addEventListener("dragover", function(ev) {
+  ev.preventDefault();
+  fileDropArea.classList.add("dragover");
+});
+fileDropArea.addEventListener("dragleave", function() {
+  fileDropArea.classList.remove("dragover");
+});
+fileDropArea.addEventListener("drop", function(ev) {
+  ev.preventDefault();
+  fileDropArea.classList.remove("dragover");
+  if (ev.dataTransfer && ev.dataTransfer.files) {
+    handleFileUpload(ev.dataTransfer.files);
+  }
+});
+
+function handleFileUpload(files) {
+  if (!files || !files.length) return;
+  if (!state.isAdmin) { toast("Admin only", "warning"); return; }
+  const fileArray = Array.from(files);
+  // Upload sequentially so the progress bar stays meaningful
+  uploadNext(fileArray, 0);
+}
+
+function uploadNext(arr, idx) {
+  if (idx >= arr.length) {
+    $("#uploadProgress").classList.remove("active");
+    $("#uploadProgressBar").style.width = "0%";
+    fileInput.value = "";
+    return;
+  }
+  const file = arr[idx];
+  const safeName = file.name.replace(/[^a-zA-Z0-9._\-]/g, "_");
+  const path = "psleRoadEvents/" + Date.now() + "_" + safeName;
+  const ref  = storage.ref(path);
+  const task = ref.put(file);
+  $("#uploadProgress").classList.add("active");
+  task.on("state_changed", function(snap) {
+    const pct = (snap.bytesTransferred / snap.totalBytes) * 100;
+    $("#uploadProgressBar").style.width = pct + "%";
+  }, function(err) {
+    console.error(err);
+    toast("Upload failed: " + err.message, "error");
+    uploadNext(arr, idx + 1);
+  }, function() {
+    task.snapshot.ref.getDownloadURL().then(function(url) {
+      state.uploadedFiles.push({
+        name: file.name,
+        url: url,
+        storagePath: path,
+        size: file.size,
+        contentType: file.type
+      });
+      renderUploadedFilesList();
+      toast('Uploaded "' + file.name + '"', "success");
+      uploadNext(arr, idx + 1);
+    });
+  });
+}
+
+/* Save event */
+$("#saveEventBtn").addEventListener("click", function() {
+  if (!state.isAdmin) return;
+  const title = $("#eventTitle").value.trim();
+  const date  = $("#eventDate").value;
+  if (!title) { toast("Please enter a title", "warning"); return; }
+  if (!date)  { toast("Please choose a date", "warning"); return; }
+
+  // Strip empty links
+  const cleanLinks = state.links.filter(function(l) {
+    return l && l.url && l.url.trim();
+  }).map(function(l) {
+    return {
+      type:  l.type  || "other",
+      label: (l.label || "").trim() || (l.type === "zoom" ? "Join Zoom" : (l.type === "dropbox" ? "Dropbox" : "Open link")),
+      url:   l.url.trim()
+    };
+  });
+
+  const payload = {
+    title: title,
+    date: date,
+    time: $("#eventTime").value || "",
+    category: state.selectedCategory,
+    description: $("#eventDescription").value.trim(),
+    links: cleanLinks,
+    files: state.uploadedFiles.slice(),
+    registrationEnabled: $("#enableRegistration").checked,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    updatedBy: state.currentUser ? state.currentUser.email : null
+  };
+
+  const saveBtn = $("#saveEventBtn");
+  saveBtn.disabled = true;
+  saveBtn.innerHTML = '<span class="loading-spinner"></span> Saving…';
+
+  let promise;
+  if (state.editorEvent) {
+    promise = db.collection(EVENTS_COLLECTION).doc(state.editorEvent.id).update(payload);
+  } else {
+    payload.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+    payload.createdBy = state.currentUser ? state.currentUser.email : null;
+    promise = db.collection(EVENTS_COLLECTION).add(payload);
+  }
+  promise.then(function() {
+    saveBtn.disabled = false;
+    saveBtn.textContent = "Save Event";
+    closeModal("eventEditorModal");
+    toast(state.editorEvent ? "Event updated" : "Event added", "success");
+  }).catch(function(err) {
+    console.error(err);
+    saveBtn.disabled = false;
+    saveBtn.textContent = "Save Event";
+    toast("Save failed: " + err.message, "error");
+  });
+});
+
+/* Delete event */
+$("#deleteEventBtn").addEventListener("click", function() {
+  if (!state.editorEvent) return;
+  if (!confirm('Delete "' + state.editorEvent.title + '"? This cannot be undone.')) return;
+
+  const evt = state.editorEvent;
+  // Try to delete attached files from Storage too
+  if (evt.files && evt.files.length) {
+    evt.files.forEach(function(f) {
+      if (f.storagePath) {
+        storage.ref(f.storagePath).delete().catch(function(err) {
+          console.warn("Couldn't delete file from storage:", err);
+        });
+      }
+    });
+  }
+  db.collection(EVENTS_COLLECTION).doc(evt.id).delete().then(function() {
+    closeModal("eventEditorModal");
+    toast("Event deleted", "info");
+  }).catch(function(err) {
+    toast("Delete failed: " + err.message, "error");
+  });
+});
+
+/* ============================================================
+   EVENT DETAIL VIEW
+   ============================================================ */
+function openEventDetail(event, sameDayList) {
+  // If multiple events on a day, show the first plus a list selector
+  const body = $("#eventDetailBody");
+  const footer = $("#eventDetailFooter");
+  body.innerHTML = "";
+  footer.innerHTML = "";
+
+  const events = sameDayList && sameDayList.length ? sameDayList : [event];
+
+  events.forEach(function(evt, idx) {
+    const wrap = el("div", { class: "event-detail" });
+
+    const headerCls = "event-detail-header " + (evt.category || "lesson");
+    const header = el("div", { class: headerCls }, [
+      el("div", { class: "event-detail-cat" }, prettyCategory(evt.category)),
+      el("div", { class: "event-detail-title" }, evt.title),
+      el("div", { class: "event-detail-meta" },
+        formatNiceDate(evt.date) + (evt.time ? " · " + formatTime12(evt.time) : "")
+      )
+    ]);
+    wrap.appendChild(header);
+
+    if (evt.description) {
+      const desc = el("div", { class: "event-detail-section" }, [
+        el("div", { class: "event-detail-section-label" }, "About this event"),
+        el("div", { class: "event-detail-description" }, evt.description)
+      ]);
+      wrap.appendChild(desc);
+    }
+
+    // Decide whether to show registration link or not
+    const requiresReg     = !!evt.registrationEnabled;
+    const userHasRegistered = userIsRegisteredFor(evt);
+
+    // Links
+    if (evt.links && evt.links.length) {
+      const linksWrap = el("div", { class: "event-detail-section" });
+      linksWrap.appendChild(el("div", { class: "event-detail-section-label" }, "Links"));
+      const linkList = el("div", { class: "event-link-list" });
+      evt.links.forEach(function(link) {
+        const isRegistrationLink = (link.type === "zoom" || link.type === "registration");
+        // If registration is required but user hasn't registered, hide registration links
+        if (requiresReg && isRegistrationLink && !userHasRegistered) {
+          // Insert a placeholder "register first" row
+          const lockRow = el("div", {
+            class: "event-link",
+            style: "background: var(--bg-tertiary); cursor: default;"
+          }, [
+            el("div", { class: "event-link-icon", style: "background: var(--pastel-cream); color: var(--pastel-cream-text);" }, "🔒"),
+            el("div", { class: "event-link-text", html: "<strong>" + escapeHtml(link.label || "Registration link") + "</strong><br><span style='font-size: 11px; color: var(--text-tertiary);'>Register below to unlock</span>" })
+          ]);
+          linkList.appendChild(lockRow);
+          return;
+        }
+        const iconCls = link.type === "zoom" ? "zoom" : (link.type === "dropbox" ? "dropbox" : "");
+        const a = el("a", {
+          href: link.url,
+          target: "_blank",
+          rel: "noopener noreferrer",
+          class: "event-link"
+        }, [
+          el("div", { class: "event-link-icon " + iconCls }, link.type === "zoom" ? "🎥" : (link.type === "dropbox" ? "📦" : "🔗")),
+          el("div", { class: "event-link-text" }, link.label || link.url),
+          el("div", { class: "event-link-action" }, "Open ↗")
+        ]);
+        linkList.appendChild(a);
+      });
+      linksWrap.appendChild(linkList);
+      wrap.appendChild(linksWrap);
+    }
+
+    // Files
+    if (evt.files && evt.files.length) {
+      const filesWrap = el("div", { class: "event-detail-section" });
+      filesWrap.appendChild(el("div", { class: "event-detail-section-label" }, "Files"));
+      const fileList = el("div", { class: "event-link-list" });
+      evt.files.forEach(function(f) {
+        const sizeKb = f.size ? Math.round(f.size / 1024) + " KB" : "";
+        const a = el("a", {
+          href: f.url,
+          target: "_blank",
+          rel: "noopener noreferrer",
+          download: f.name,
+          class: "event-link"
+        }, [
+          el("div", { class: "event-link-icon file" }, "📄"),
+          el("div", { class: "event-link-text" }, f.name + (sizeKb ? "  ·  " + sizeKb : "")),
+          el("div", { class: "event-link-action" }, "Download ↓")
+        ]);
+        fileList.appendChild(a);
+      });
+      filesWrap.appendChild(fileList);
+      wrap.appendChild(filesWrap);
+    }
+
+    // Registration call-to-action
+    if (requiresReg) {
+      const regBox = el("div", { class: "event-detail-section" });
+      regBox.appendChild(el("div", { class: "event-detail-section-label" }, "Registration"));
+      if (!state.currentUser) {
+        regBox.appendChild(el("div", {
+          class: "event-detail-description",
+          style: "margin-bottom: var(--space-sm);"
+        }, "Sign in to register for this event."));
+        const signInBtn = el("button", {
+          class: "btn btn-primary",
+          onclick: function() {
+            closeModal("eventDetailModal");
+            openModal("loginModal");
+          }
+        }, "Sign in");
+        regBox.appendChild(signInBtn);
+      } else if (userHasRegistered) {
+        const reg = userHasRegistered;
+        regBox.appendChild(el("div", {
+          class: "event-detail-description",
+          style: "color: var(--pastel-mint-text); font-weight: 600;"
+        }, "✓ You're registered" + (reg.childName ? " — " + reg.childName : "") + "."));
+      } else {
+        const regBtn = el("button", {
+          class: "btn btn-primary",
+          onclick: function() {
+            state.pendingRegistrationEvent = evt;
+            closeModal("eventDetailModal");
+            openRegistrationModal(evt);
+          }
+        }, "Register for this event");
+        regBox.appendChild(regBtn);
+      }
+      wrap.appendChild(regBox);
+    }
+
+    body.appendChild(wrap);
+    if (idx < events.length - 1) {
+      body.appendChild(el("hr", { style: "border: none; border-top: 1px solid var(--border-subtle); margin: var(--space-lg) 0;" }));
+    }
+  });
+
+  // Footer buttons
+  if (state.isAdmin && events.length === 1) {
+    footer.appendChild(el("button", {
+      class: "btn btn-secondary",
+      onclick: function() {
+        closeModal("eventDetailModal");
+        openEventEditor(events[0], null);
+      }
+    }, "Edit"));
+  }
+  footer.appendChild(el("button", {
+    class: "btn btn-primary",
+    onclick: function() { closeModal("eventDetailModal"); }
+  }, "Close"));
+
+  openModal("eventDetailModal");
+}
+
+function prettyCategory(cat) {
+  const map = {
+    lesson: "Lesson",
+    workshop: "Workshop",
+    assessment: "Mock / Assessment",
+    holiday: "Holiday",
+    exam: "PSLE Exam",
+    resource: "Resource Drop",
+    milestone: "Milestone"
+  };
+  return map[cat] || "Event";
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, function(c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+  });
+}
+
+/* ============================================================
+   REGISTRATION
+   ============================================================ */
+const userRegistrations = { byEventId: {} };  // populated below
+
+function userIsRegisteredFor(evt) {
+  return state.currentUser ? userRegistrations.byEventId[evt.id] : null;
+}
+
+function listenForRegistrations() {
+  if (!state.currentUser) return;
+  db.collection(REGISTRATIONS_COLLECTION)
+    .where("userUid", "==", state.currentUser.uid)
+    .onSnapshot(function(snap) {
+      userRegistrations.byEventId = {};
+      snap.docs.forEach(function(d) {
+        const r = d.data();
+        userRegistrations.byEventId[r.eventId] = r;
+      });
+      // Re-render any open detail modal
+      if ($("#eventDetailModal").classList.contains("active") && state.pendingRegistrationEvent) {
+        // No-op — user-driven re-open will pick up new state
+      }
+    }, function(err) {
+      console.warn("Could not listen for registrations:", err);
+    });
+}
+auth.onAuthStateChanged(function() { listenForRegistrations(); });
+
+function openRegistrationModal(evt) {
+  state.pendingRegistrationEvent = evt;
+  const summary = $("#regEventSummary");
+  summary.innerHTML = "";
+  summary.appendChild(el("div", { class: "reg-event-name" }, evt.title));
+  summary.appendChild(el("div", { class: "reg-event-when" },
+    formatNiceDate(evt.date) + (evt.time ? " · " + formatTime12(evt.time) : "")
+  ));
+  $("#agreeFee").checked = false;
+  $("#regChildName").value = "";
+  $("#regChildLevel").value = "";
+  $("#confirmRegistrationBtn").disabled = true;
+  openModal("registrationModal");
+}
+
+$("#agreeFee").addEventListener("change", function() {
+  $("#confirmRegistrationBtn").disabled = !$("#agreeFee").checked;
+});
+
+$("#confirmRegistrationBtn").addEventListener("click", function() {
+  if (!state.currentUser) {
+    toast("Please sign in", "warning");
+    return;
+  }
+  if (!$("#agreeFee").checked) {
+    toast("You must agree to the terms", "warning");
+    return;
+  }
+  const evt = state.pendingRegistrationEvent;
+  if (!evt) return;
+  const childName  = $("#regChildName").value.trim();
+  const childLevel = $("#regChildLevel").value;
+  if (!childName)  { toast("Please enter your child's name", "warning"); return; }
+  if (!childLevel) { toast("Please select your child's level", "warning"); return; }
+
+  const btn = $("#confirmRegistrationBtn");
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading-spinner"></span> Confirming…';
+
+  const docId = state.currentUser.uid + "_" + evt.id;
+  db.collection(REGISTRATIONS_COLLECTION).doc(docId).set({
+    eventId: evt.id,
+    eventTitle: evt.title,
+    eventDate: evt.date,
+    userUid: state.currentUser.uid,
+    userEmail: state.currentUser.email,
+    userName: state.currentUser.displayName || null,
+    childName: childName,
+    childLevel: childLevel,
+    agreedToFee: true,
+    feeAmountSGD: 100,
+    registeredAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(function() {
+    btn.disabled = false;
+    btn.textContent = "Confirm Registration";
+    closeModal("registrationModal");
+    toast("✓ Registered for " + evt.title, "success");
+    // Re-open detail modal so user sees the unlocked links
+    openEventDetail(evt);
+  }).catch(function(err) {
+    console.error(err);
+    btn.disabled = false;
+    btn.textContent = "Confirm Registration";
+    toast("Registration failed: " + err.message, "error");
+  });
+});
+
+/* ============================================================
+   INITIAL RENDER
+   ============================================================ */
+renderHeader();
+renderToolbar();
+renderCalendar();
+
+</script>
+</body>
+</html>
