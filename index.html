@@ -1899,6 +1899,14 @@ const NOTIFY_PREFS_COLLECTION     = "psleRoadNotificationPrefs";
 const CALENDAR_UPDATES_COLLECTION = "psleRoadCalendarUpdates";
 const MAIL_COLLECTION             = "mail"; // read by the Firebase "Trigger Email" extension
 
+// Admins always emailed on any calendar change (no opt-in needed).
+// Opted-in users (via the bell) are added as bcc on top of this list.
+const NOTIFICATION_EMAILS = [
+  "chungzhikai@gmail.com",
+  "admin@polymathlc.com.sg",
+  "elsielcr@gmail.com"
+];
+
 /* ============================================================
    APP STATE
    ============================================================ */
@@ -3320,7 +3328,49 @@ function startNotifListeners() {
 }
 auth.onAuthStateChanged(function() { startNotifListeners(); });
 
-/* Log a calendar change to the feed and queue emails to subscribers.
+/* Queue a calendar-update email via the Firebase "Trigger Email" extension.
+   Always emails NOTIFICATION_EMAILS (to:); opted-in users go in bcc. */
+function sendCalendarUpdateEmail(action, eventTitle, eventDate, subscriberEmails) {
+  const verb = action === "created" ? "added"
+             : action === "deleted" ? "removed" : "updated";
+  const niceDate = eventDate ? formatNiceDate(eventDate) : "";
+  const siteUrl = window.location.origin + window.location.pathname;
+  const subject = "Road to PSLE — calendar " + verb + ": " + eventTitle;
+  const text = "The Road to PSLE calendar has been updated.\n\n"
+    + "Event: " + eventTitle + "\n"
+    + (niceDate ? "Date: " + niceDate + "\n" : "")
+    + "Change: Event " + verb + "\n\n"
+    + "View the calendar: " + siteUrl;
+  const html = '<div style="font-family:Arial,Helvetica,sans-serif;color:#1A1A1A">'
+    + '<h2 style="margin:0 0 12px">The Road to PSLE — calendar updated</h2>'
+    + "<p>An event on the calendar has been " + verb + ".</p>"
+    + '<table style="border-collapse:collapse;font-size:14px">'
+    + '<tr><td style="padding:4px 14px 4px 0"><strong>Event</strong></td><td>'
+    + escapeHtml(eventTitle) + "</td></tr>"
+    + (niceDate ? '<tr><td style="padding:4px 14px 4px 0"><strong>Date</strong></td><td>'
+        + escapeHtml(niceDate) + "</td></tr>" : "")
+    + '<tr><td style="padding:4px 14px 4px 0"><strong>Change</strong></td><td>Event '
+    + verb + "</td></tr></table>"
+    + '<p style="margin-top:16px"><a href="' + escapeHtml(siteUrl)
+    + '" style="background:#42A5F5;color:#fff;padding:10px 18px;border-radius:8px;'
+    + 'text-decoration:none;display:inline-block">Open the calendar</a></p></div>';
+
+  const bcc = [];
+  (subscriberEmails || []).forEach(function(e) {
+    if (e && NOTIFICATION_EMAILS.indexOf(e) === -1 && bcc.indexOf(e) === -1) bcc.push(e);
+  });
+
+  const mailDoc = {
+    to: NOTIFICATION_EMAILS.slice(),
+    message: { subject: subject, text: text, html: html }
+  };
+  if (bcc.length) mailDoc.bcc = bcc;
+
+  db.collection(MAIL_COLLECTION).add(mailDoc)
+    .catch(function(err) { console.warn("Couldn't queue notification email:", err); });
+}
+
+/* Log a calendar change to the feed and email everyone who should know.
    Admin-only — only the admin can add/edit/delete events. */
 function notifyCalendarChange(action, eventTitle, eventDate, eventId) {
   if (!state.isAdmin) return;
@@ -3335,50 +3385,24 @@ function notifyCalendarChange(action, eventTitle, eventDate, eventId) {
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   }).catch(function(err) { console.warn("Couldn't log calendar update:", err); });
 
+  // Try to add opted-in subscribers, but always send to the admin list even
+  // if the subscriber query fails or returns nothing.
   db.collection(NOTIFY_PREFS_COLLECTION).where("subscribed", "==", true).get()
     .then(function(snap) {
       const emails = [];
       snap.forEach(function(d) {
         const e = d.data().userEmail;
-        if (e && emails.indexOf(e) === -1) emails.push(e);
+        if (e) emails.push(e);
       });
-      if (!emails.length) return;
-
-      const verb = action === "created" ? "added"
-                 : action === "deleted" ? "removed" : "updated";
-      const niceDate = eventDate ? formatNiceDate(eventDate) : "";
-      const siteUrl = window.location.origin + window.location.pathname;
-      const subject = "Road to PSLE — calendar " + verb + ": " + eventTitle;
-      const text = "The Road to PSLE calendar has been updated.\n\n"
-        + "Event: " + eventTitle + "\n"
-        + (niceDate ? "Date: " + niceDate + "\n" : "")
-        + "Change: Event " + verb + "\n\n"
-        + "View the calendar: " + siteUrl + "\n\n"
-        + "You receive these emails because you turned on calendar notifications. "
-        + "Open the calendar and use the bell icon to turn them off.";
-      const html = '<div style="font-family:Arial,Helvetica,sans-serif;color:#1A1A1A">'
-        + '<h2 style="margin:0 0 12px">The Road to PSLE — calendar updated</h2>'
-        + "<p>An event on the calendar has been " + verb + ".</p>"
-        + '<table style="border-collapse:collapse;font-size:14px">'
-        + '<tr><td style="padding:4px 14px 4px 0"><strong>Event</strong></td><td>'
-        + escapeHtml(eventTitle) + "</td></tr>"
-        + (niceDate ? '<tr><td style="padding:4px 14px 4px 0"><strong>Date</strong></td><td>'
-            + escapeHtml(niceDate) + "</td></tr>" : "")
-        + '<tr><td style="padding:4px 14px 4px 0"><strong>Change</strong></td><td>Event '
-        + verb + "</td></tr></table>"
-        + '<p style="margin-top:16px"><a href="' + escapeHtml(siteUrl)
-        + '" style="background:#42A5F5;color:#fff;padding:10px 18px;border-radius:8px;'
-        + 'text-decoration:none;display:inline-block">Open the calendar</a></p>'
-        + '<p style="color:#888;font-size:12px;margin-top:20px">You receive these emails '
-        + "because you turned on calendar notifications for The Road to PSLE. "
-        + "Open the calendar and use the bell icon to turn them off.</p></div>";
-
-      return db.collection(MAIL_COLLECTION).add({
-        bcc: emails,
-        message: { subject: subject, text: text, html: html }
-      });
+      return emails;
     })
-    .catch(function(err) { console.warn("Couldn't queue notification emails:", err); });
+    .catch(function(err) {
+      console.warn("Couldn't read subscribers, emailing admins only:", err);
+      return [];
+    })
+    .then(function(emails) {
+      sendCalendarUpdateEmail(action, eventTitle, eventDate, emails);
+    });
 }
 
 /* ============================================================
