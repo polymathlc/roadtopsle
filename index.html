@@ -183,6 +183,93 @@
     letter-spacing: 0.05em;
   }
 
+  /* ---- Notification bell ---- */
+  .notif-bell { position: relative; }
+  .notif-bell-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    line-height: 1;
+    box-shadow: var(--shadow-xs);
+    transition: background var(--transition-fast);
+  }
+  .notif-bell-btn:hover { background: var(--accent-bg); }
+  .notif-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: var(--radius-full);
+    background: var(--pastel-rose-deep);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .notif-panel {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 320px;
+    max-width: 86vw;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    z-index: 120;
+    overflow: hidden;
+    display: none;
+    text-align: left;
+  }
+  .notif-panel.open { display: block; }
+  .notif-panel-head {
+    padding: var(--space-sm) var(--space-md);
+    font-weight: 700;
+    font-size: var(--font-size-sm);
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .notif-toggle {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-subtle);
+    cursor: pointer;
+  }
+  .notif-toggle input { width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px; }
+  .notif-feed { max-height: 320px; overflow-y: auto; }
+  .notif-item {
+    display: flex;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    border-bottom: 1px solid var(--border-subtle);
+    font-size: var(--font-size-sm);
+  }
+  .notif-item:last-child { border-bottom: none; }
+  .notif-item.unseen { background: var(--accent-bg); }
+  .notif-item-icon { font-size: 15px; flex-shrink: 0; }
+  .notif-item-title { font-weight: 600; color: var(--text-primary); }
+  .notif-item-meta { font-size: var(--font-size-xs); color: var(--text-tertiary); }
+  .notif-empty {
+    padding: var(--space-lg) var(--space-md);
+    text-align: center;
+    color: var(--text-tertiary);
+    font-size: var(--font-size-sm);
+  }
+
   /* ========================================================================
      HERO / PAGE TITLE
      ======================================================================== */
@@ -1808,6 +1895,9 @@ const ADMIN_EMAIL = "chungzhikai@gmail.com";
 const EVENTS_COLLECTION       = "psleRoadEvents";
 const REGISTRATIONS_COLLECTION = "psleRoadRegistrations";
 const VIDEO_CONSENTS_COLLECTION = "psleRoadVideoConsents";
+const NOTIFY_PREFS_COLLECTION     = "psleRoadNotificationPrefs";
+const CALENDAR_UPDATES_COLLECTION = "psleRoadCalendarUpdates";
+const MAIL_COLLECTION             = "mail"; // read by the Firebase "Trigger Email" extension
 
 /* ============================================================
    APP STATE
@@ -1825,6 +1915,10 @@ const state = {
   pendingRegistrationEvent: null,
   hasVideoConsent: false,        // user has agreed to lesson-recording T&Cs
   pendingVideoTarget: null,      // {event, link} queued behind the consent modal
+  notifyPrefs: null,             // current user's notification-preference doc
+  calendarUpdates: [],           // recent calendar-change feed (for the bell)
+  notifPanelOpen: false,         // is the notification dropdown open
+  notifUnsubs: [],               // active Firestore listener unsubscribe fns
 };
 
 /* ============================================================
@@ -1959,6 +2053,8 @@ function renderHeader() {
     if (state.isAdmin) {
       wrap.appendChild(el("span", { class: "badge-admin" }, "Admin"));
     }
+    root.appendChild(el("div", { class: "notif-bell", id: "notifBell" }));
+    renderBell();
     root.appendChild(wrap);
     const signOutBtn = el("button", {
       class: "btn btn-ghost",
@@ -2417,6 +2513,8 @@ $("#saveEventBtn").addEventListener("click", function() {
   saveBtn.disabled = true;
   saveBtn.innerHTML = '<span class="loading-spinner"></span> Saving…';
 
+  const wasEditing = !!state.editorEvent;
+  const editId = state.editorEvent ? state.editorEvent.id : null;
   let promise;
   if (state.editorEvent) {
     promise = db.collection(EVENTS_COLLECTION).doc(state.editorEvent.id).update(payload);
@@ -2425,11 +2523,13 @@ $("#saveEventBtn").addEventListener("click", function() {
     payload.createdBy = state.currentUser ? state.currentUser.email : null;
     promise = db.collection(EVENTS_COLLECTION).add(payload);
   }
-  promise.then(function() {
+  promise.then(function(ref) {
     saveBtn.disabled = false;
     saveBtn.textContent = "Save Event";
     closeModal("eventEditorModal");
-    toast(state.editorEvent ? "Event updated" : "Event added", "success");
+    toast(wasEditing ? "Event updated" : "Event added", "success");
+    notifyCalendarChange(wasEditing ? "updated" : "created", title, date,
+                         wasEditing ? editId : (ref && ref.id));
   }).catch(function(err) {
     console.error(err);
     saveBtn.disabled = false;
@@ -2457,6 +2557,7 @@ $("#deleteEventBtn").addEventListener("click", function() {
   db.collection(EVENTS_COLLECTION).doc(evt.id).delete().then(function() {
     closeModal("eventEditorModal");
     toast("Event deleted", "info");
+    notifyCalendarChange("deleted", evt.title, evt.date, evt.id);
   }).catch(function(err) {
     toast("Delete failed: " + err.message, "error");
   });
@@ -3063,6 +3164,222 @@ $("#confirmRegistrationBtn").addEventListener("click", function() {
     toast("Registration failed: " + err.message, "error");
   });
 });
+
+/* ============================================================
+   CALENDAR NOTIFICATIONS — bell + email on calendar updates
+   ============================================================ */
+
+/* Count updates the user hasn't seen yet (their own changes don't count). */
+function notifUnseenCount() {
+  if (!state.currentUser) return 0;
+  const seen = (state.notifyPrefs && state.notifyPrefs.lastSeenAt)
+    ? state.notifyPrefs.lastSeenAt.toMillis() : 0;
+  const myEmail = (state.currentUser.email || "").toLowerCase();
+  let count = 0;
+  state.calendarUpdates.forEach(function(u) {
+    if (u.byEmail && u.byEmail.toLowerCase() === myEmail) return;
+    const t = u.createdAt ? u.createdAt.toMillis() : Date.now();
+    if (t > seen) count++;
+  });
+  return count;
+}
+
+/* Render the bell button + dropdown panel into #notifBell. */
+function renderBell() {
+  const root = $("#notifBell");
+  if (!root) return;
+  root.innerHTML = "";
+
+  const unseen = notifUnseenCount();
+  const btn = el("button", {
+    class: "notif-bell-btn",
+    "aria-label": "Calendar notifications",
+    title: "Calendar notifications",
+    onclick: function(ev) { ev.stopPropagation(); toggleNotifPanel(); }
+  }, "🔔");
+  if (unseen > 0) {
+    btn.appendChild(el("span", { class: "notif-badge" }, unseen > 9 ? "9+" : String(unseen)));
+  }
+  root.appendChild(btn);
+
+  const panel = el("div", { class: "notif-panel" + (state.notifPanelOpen ? " open" : "") });
+  panel.addEventListener("click", function(ev) { ev.stopPropagation(); });
+  panel.appendChild(el("div", { class: "notif-panel-head" }, "Calendar updates"));
+
+  const subscribed = !!(state.notifyPrefs && state.notifyPrefs.subscribed);
+  const toggleWrap = el("label", { class: "notif-toggle" });
+  const cb = el("input", { type: "checkbox" });
+  cb.checked = subscribed;
+  cb.addEventListener("change", function() { setNotifySubscription(cb.checked); });
+  toggleWrap.appendChild(cb);
+  toggleWrap.appendChild(el("span", null,
+    "Email me at " + (state.currentUser ? state.currentUser.email : "") +
+    " whenever the calendar is updated"));
+  panel.appendChild(toggleWrap);
+
+  const feed = el("div", { class: "notif-feed" });
+  if (!state.calendarUpdates.length) {
+    feed.appendChild(el("div", { class: "notif-empty" }, "No calendar updates yet."));
+  } else {
+    const seen = (state.notifyPrefs && state.notifyPrefs.lastSeenAt)
+      ? state.notifyPrefs.lastSeenAt.toMillis() : 0;
+    const myEmail = (state.currentUser && state.currentUser.email || "").toLowerCase();
+    state.calendarUpdates.slice(0, 20).forEach(function(u) {
+      const verb = u.action === "created" ? "added"
+                 : u.action === "deleted" ? "removed" : "updated";
+      const icon = u.action === "created" ? "➕"
+                 : u.action === "deleted" ? "🗑️" : "✏️";
+      const t = u.createdAt ? u.createdAt.toMillis() : Date.now();
+      const mine = u.byEmail && u.byEmail.toLowerCase() === myEmail;
+      const isUnseen = t > seen && !mine;
+      feed.appendChild(el("div", { class: "notif-item" + (isUnseen ? " unseen" : "") }, [
+        el("span", { class: "notif-item-icon" }, icon),
+        el("div", null, [
+          el("div", { class: "notif-item-title" }, u.eventTitle || "Untitled event"),
+          el("div", { class: "notif-item-meta" },
+            "Event " + verb + (u.eventDate ? " — " + formatNiceDate(u.eventDate) : ""))
+        ])
+      ]));
+    });
+  }
+  panel.appendChild(feed);
+  root.appendChild(panel);
+}
+
+function toggleNotifPanel() {
+  state.notifPanelOpen = !state.notifPanelOpen;
+  if (state.notifPanelOpen) markNotifSeen();
+  renderBell();
+}
+
+/* Close the panel when clicking anywhere outside it. */
+document.addEventListener("click", function() {
+  if (state.notifPanelOpen) { state.notifPanelOpen = false; renderBell(); }
+});
+
+/* Stamp lastSeenAt so the unread badge clears. */
+function markNotifSeen() {
+  if (!state.currentUser) return;
+  const u = state.currentUser;
+  db.collection(NOTIFY_PREFS_COLLECTION).doc(u.uid).set({
+    userUid: u.uid,
+    userEmail: u.email || null,
+    userName: u.displayName || null,
+    lastSeenAt: firebase.firestore.FieldValue.serverTimestamp()
+  }, { merge: true }).catch(function(err) {
+    console.warn("Couldn't update lastSeen:", err);
+  });
+}
+
+/* Turn the email subscription on/off for the current user. */
+function setNotifySubscription(on) {
+  if (!state.currentUser) return;
+  const u = state.currentUser;
+  db.collection(NOTIFY_PREFS_COLLECTION).doc(u.uid).set({
+    userUid: u.uid,
+    userEmail: u.email || null,
+    userName: u.displayName || null,
+    subscribed: !!on,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  }, { merge: true }).then(function() {
+    toast(on ? "You'll be emailed when the calendar is updated"
+             : "Calendar email notifications turned off", on ? "success" : "info");
+  }).catch(function(err) {
+    toast("Couldn't update notification setting: " + err.message, "error");
+  });
+}
+
+function detachNotifListeners() {
+  state.notifUnsubs.forEach(function(fn) { try { fn(); } catch (e) {} });
+  state.notifUnsubs = [];
+}
+
+/* (Re)attach the per-user pref + calendar-update-feed listeners. */
+function startNotifListeners() {
+  detachNotifListeners();
+  state.notifyPrefs = null;
+  state.calendarUpdates = [];
+  if (!state.currentUser) { renderBell(); return; }
+  const uid = state.currentUser.uid;
+  state.notifUnsubs.push(
+    db.collection(NOTIFY_PREFS_COLLECTION).doc(uid).onSnapshot(function(doc) {
+      state.notifyPrefs = doc.exists ? doc.data() : null;
+      renderBell();
+    }, function(err) { console.warn("Couldn't listen for notification prefs:", err); })
+  );
+  state.notifUnsubs.push(
+    db.collection(CALENDAR_UPDATES_COLLECTION)
+      .orderBy("createdAt", "desc").limit(30)
+      .onSnapshot(function(snap) {
+        state.calendarUpdates = snap.docs.map(function(d) {
+          const x = d.data(); x.id = d.id; return x;
+        });
+        renderBell();
+      }, function(err) { console.warn("Couldn't listen for calendar updates:", err); })
+  );
+}
+auth.onAuthStateChanged(function() { startNotifListeners(); });
+
+/* Log a calendar change to the feed and queue emails to subscribers.
+   Admin-only — only the admin can add/edit/delete events. */
+function notifyCalendarChange(action, eventTitle, eventDate, eventId) {
+  if (!state.isAdmin) return;
+  eventTitle = eventTitle || "Untitled event";
+
+  db.collection(CALENDAR_UPDATES_COLLECTION).add({
+    action: action,
+    eventTitle: eventTitle,
+    eventDate: eventDate || "",
+    eventId: eventId || "",
+    byEmail: state.currentUser ? state.currentUser.email : null,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).catch(function(err) { console.warn("Couldn't log calendar update:", err); });
+
+  db.collection(NOTIFY_PREFS_COLLECTION).where("subscribed", "==", true).get()
+    .then(function(snap) {
+      const emails = [];
+      snap.forEach(function(d) {
+        const e = d.data().userEmail;
+        if (e && emails.indexOf(e) === -1) emails.push(e);
+      });
+      if (!emails.length) return;
+
+      const verb = action === "created" ? "added"
+                 : action === "deleted" ? "removed" : "updated";
+      const niceDate = eventDate ? formatNiceDate(eventDate) : "";
+      const siteUrl = window.location.origin + window.location.pathname;
+      const subject = "Road to PSLE — calendar " + verb + ": " + eventTitle;
+      const text = "The Road to PSLE calendar has been updated.\n\n"
+        + "Event: " + eventTitle + "\n"
+        + (niceDate ? "Date: " + niceDate + "\n" : "")
+        + "Change: Event " + verb + "\n\n"
+        + "View the calendar: " + siteUrl + "\n\n"
+        + "You receive these emails because you turned on calendar notifications. "
+        + "Open the calendar and use the bell icon to turn them off.";
+      const html = '<div style="font-family:Arial,Helvetica,sans-serif;color:#1A1A1A">'
+        + '<h2 style="margin:0 0 12px">The Road to PSLE — calendar updated</h2>'
+        + "<p>An event on the calendar has been " + verb + ".</p>"
+        + '<table style="border-collapse:collapse;font-size:14px">'
+        + '<tr><td style="padding:4px 14px 4px 0"><strong>Event</strong></td><td>'
+        + escapeHtml(eventTitle) + "</td></tr>"
+        + (niceDate ? '<tr><td style="padding:4px 14px 4px 0"><strong>Date</strong></td><td>'
+            + escapeHtml(niceDate) + "</td></tr>" : "")
+        + '<tr><td style="padding:4px 14px 4px 0"><strong>Change</strong></td><td>Event '
+        + verb + "</td></tr></table>"
+        + '<p style="margin-top:16px"><a href="' + escapeHtml(siteUrl)
+        + '" style="background:#42A5F5;color:#fff;padding:10px 18px;border-radius:8px;'
+        + 'text-decoration:none;display:inline-block">Open the calendar</a></p>'
+        + '<p style="color:#888;font-size:12px;margin-top:20px">You receive these emails '
+        + "because you turned on calendar notifications for The Road to PSLE. "
+        + "Open the calendar and use the bell icon to turn them off.</p></div>";
+
+      return db.collection(MAIL_COLLECTION).add({
+        bcc: emails,
+        message: { subject: subject, text: text, html: html }
+      });
+    })
+    .catch(function(err) { console.warn("Couldn't queue notification emails:", err); });
+}
 
 /* ============================================================
    INITIAL RENDER
